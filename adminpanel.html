@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MaxEarn Admin Panel</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f5f7ff; margin:0; padding:20px;}
+#adminContainer { max-width:500px; margin:auto; background:white; padding:20px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.1);}
+h1 { color:#6366f1; text-align:center;}
+input { width:90%; padding:10px; margin:10px 0; border-radius:5px; border:1px solid #ccc;}
+button { width:95%; padding:10px; margin:10px 0; border:none; border-radius:6px; cursor:pointer; background:#6366f1; color:white; font-size:15px;}
+#adminSection { display:none; }
+.userInfo { background:#f0f0f0; padding:10px; border-radius:6px; margin:10px 0; }
+</style>
+</head>
+<body>
+
+<div id="adminContainer">
+<h1>Admin Panel</h1>
+<p>Enter admin password to access user management:</p>
+<input type="password" id="adminPassword" placeholder="Admin Password">
+<button onclick="accessAdmin()">Login</button>
+
+<div id="adminSection">
+<h2>Approve User Payment / Upgrade Rank</h2>
+<p>Enter user's 6-digit code to manage account:</p>
+<input type="text" id="userAccessCode" placeholder="User 6-digit code">
+<button onclick="approvePayment()">Approve / Upgrade Rank</button>
+<button onclick="loadUserInfo()">Load User Info</button>
+<div id="userDetails"></div>
+<button onclick="logoutAdmin()">Logout</button>
+</div>
+</div>
+
+<script>
+function accessAdmin(){
+    const pass = document.getElementById("adminPassword").value.trim();
+    if(pass==="09163386884"){
+        alert("Admin access granted!");
+        document.getElementById("adminSection").style.display="block";
+    } else {
+        alert("Incorrect admin password");
+    }
+}
+
+function approvePayment(){
+    const code = document.getElementById("userAccessCode").value.trim();
+    if(!code){ alert("Enter a 6-digit user code"); return; }
+    let users = JSON.parse(localStorage.getItem("users")||"{}");
+    let found = false;
+    for(let email in users){
+        if(users[email].accessCode == code){
+            users[email].rank = (users[email].rank==="Gold" ? "Silver" : "Diamond");
+            localStorage.setItem("users", JSON.stringify(users));
+            alert(`User ${email} rank upgraded successfully!`);
+            found = true;
+            break;
+        }
+    }
+    if(!found){ alert("User code not found"); }
+}
+
+function loadUserInfo(){
+    const code = document.getElementById("userAccessCode").value.trim();
+    if(!code){ alert("Enter a 6-digit code"); return; }
+    let users = JSON.parse(localStorage.getItem("users")||"{}");
+    let found = false;
+    for(let email in users){
+        if(users[email].accessCode == code){
+            const u = users[email];
+            document.getElementById("userDetails").innerHTML = `
+            <div class="userInfo">
+                <p><b>Email:</b> ${email}</p>
+                <p><b>Balance:</b> ₦${u.balance}</p>
+                <p><b>Rank:</b> ${u.rank}</p>
+                <p><b>Daily Claimed:</b> ${u.dailyClaimed}</p>
+                <p><b>Ad Watched:</b> ${u.adWatched}</p>
+                <p><b>6-digit code:</b> ${u.accessCode}</p>
+            </div>`;
+            found = true;
+            break;
+        }
+    }
+    if(!found){ alert("User code not found"); }
+}
+
+function logoutAdmin(){
+    document.getElementById("adminSection").style.display="none";
+    document.getElementById("adminPassword").value="";
+    document.getElementById("userAccessCode").value="";
+    document.getElementById("userDetails").innerHTML="";
+    alert("Logged out from admin panel");
+}
+</script>
+
+</body>
+</html>
